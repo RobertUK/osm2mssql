@@ -23,6 +23,8 @@ using osm2mssql.Importer.Enums;
 using osm2mssql.Importer.Languages;
 using osm2mssql.Importer.Model;
 using osm2mssql.Importer.Tasks;
+using osm2mssql.Importer.Tasks.FinishTasks;
+using osm2mssql.Importer.Tasks.InitializeTasks;
 
 namespace osm2mssql.Importer.ViewModel
 {
@@ -85,18 +87,27 @@ namespace osm2mssql.Importer.ViewModel
         {
             try
             {
-                IsNotProcessing = false;
-                LastTryConnectionResult = await _dbChecker.CheckDatabaseAvailability(_connStringBuilder.CreateSqlConnectionStringBuilder(Model));
+                var createDb = _runner.Tasks.OfType<TaskCreateDatabase>().Where(x=>x.IsEnabled);
 
-                if (LastTryConnectionResult == ConnectionResult.DbAlreadyExists)
+
+                IsNotProcessing = false;
+
+                if (createDb.Any())
                 {
-                    if (MessageBox.Show("The database already exists, replace it ?", "Duplicate", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    LastTryConnectionResult = await _dbChecker.CheckDatabaseAvailability(_connStringBuilder.CreateSqlConnectionStringBuilder(Model));
+
+                    if (LastTryConnectionResult == ConnectionResult.DbAlreadyExists)
+                    {
+                        if (MessageBox.Show("The database already exists, replace it ?", "Duplicate", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                            return;
+                    }
+
+                    if (LastTryConnectionResult != ConnectionResult.DbAlreadyExists &&
+                   LastTryConnectionResult != ConnectionResult.Successful)
                         return;
                 }
 
-                if (LastTryConnectionResult != ConnectionResult.DbAlreadyExists &&
-                    LastTryConnectionResult != ConnectionResult.Successful)
-                    return;
+               
 
                 var fd = new OpenFileDialog();
                 fd.Filter = "OpenStreetMap Files (*.xml, *.pbf)|*.xml;*.pbf|All files (*.*)|*.*";
