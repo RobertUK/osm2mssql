@@ -12,8 +12,8 @@ namespace osm2mssql.Importer.Tasks.FinishTasks
 
         protected override Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
-            var task1 = Task.Factory.StartNew(() => ExecuteSqlCmd("CREATE SPATIAL INDEX idx ON Way(line) USING GEOGRAPHY_AUTO_GRID"));
-            var task2 = Task.Factory.StartNew(() => ExecuteSqlCmd("CREATE SPATIAL INDEX idx ON Node(location) USING GEOGRAPHY_AUTO_GRID"));
+            var task1 = Task.Factory.StartNew(() => ExecuteSqlCmd("IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idx_way') CREATE SPATIAL INDEX idx_way ON Way(line) USING GEOGRAPHY_AUTO_GRID"));
+            var task2 = Task.Factory.StartNew(() => ExecuteSqlCmd("IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idx_node') CREATE SPATIAL INDEX idx_node ON Node(location) USING GEOGRAPHY_AUTO_GRID"));
 
             return Task.WhenAll(new[] { task1, task2 });
         }

@@ -25,8 +25,8 @@ namespace osm2mssql.Importer.Tasks.ParallelTask
 
         protected override Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
-            ExecuteSqlCmd("TRUNCATE TABLE [Node]");
-            ExecuteSqlCmd("TRUNCATE TABLE [NodeTag]");
+            //ExecuteSqlCmd("TRUNCATE TABLE [Node]");
+            //ExecuteSqlCmd("TRUNCATE TABLE [NodeTag]");
 
             var loadingNodeTable = new DataTable();
             loadingNodeTable.TableName = "Node";

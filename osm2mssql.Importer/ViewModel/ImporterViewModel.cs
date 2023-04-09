@@ -81,10 +81,12 @@ namespace osm2mssql.Importer.ViewModel
         private async void TryConnectingToDatabase()
         {
             LastTryConnectionResult = await _dbChecker.CheckDatabaseAvailability(_connStringBuilder.CreateSqlConnectionStringBuilder(Model));
+            _runner.FillTaskList();
         }
 
         private async void StartImporting()
         {
+            var con = _connStringBuilder.CreateSqlConnectionStringBuilder(Model);
             try
             {
                 var createDb = _runner.Tasks.OfType<TaskCreateDatabase>().Where(x=>x.IsEnabled);
@@ -113,7 +115,7 @@ namespace osm2mssql.Importer.ViewModel
                 fd.Filter = "OpenStreetMap Files (*.xml, *.pbf)|*.xml;*.pbf|All files (*.*)|*.*";
                 if (fd.ShowDialog() != true)
                     return;
-                var con = _connStringBuilder.CreateSqlConnectionStringBuilder(Model);
+                
                 await _runner.RunTasks(con, fd.FileName);
             }
             catch (Exception ex)
@@ -122,7 +124,9 @@ namespace osm2mssql.Importer.ViewModel
             }
             finally
             {
+                
                 IsNotProcessing = true;
+           
             }
         }
 

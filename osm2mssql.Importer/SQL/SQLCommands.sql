@@ -1,14 +1,16 @@
-﻿
-create schema info;
-GO
+﻿IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Cities') drop table info.Cities 
+IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Roads') drop table info.Roads
+IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'AdminLevels') drop table info.AdminLevels
+
 IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idxTagType')  CREATE NONCLUSTERED INDEX idxTagType ON [TagType] ([Name])
 IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idxWayTagTyp') CREATE NONCLUSTERED INDEX idxWayTagTyp ON [WayTag] ([Typ]) INCLUDE ([WayId],[Info])
 IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idxRelationTagTyp') CREATE NONCLUSTERED INDEX idxRelationTagTyp ON [RelationTag] ([Typ]) INCLUDE ([RelationId],[Info])
 IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idxNodeTagTyp') CREATE NONCLUSTERED INDEX idxNodeTagTyp ON [dbo].[NodeTag] ([Typ]) INCLUDE ([NodeId],[Info])
-GO
 
--- INFO ADMINLEVELS CREATION
-WITH src AS (
+IF NOT EXISTS(SELECT 1 FROM SYS.SCHEMAS where name = 'info')  exec('CREATE schema info');
+
+
+;WITH src AS (
 
 (
 SELECT       Relation.id as RelationId, AdminLevel = CAST(RelationTag.Info as int), Geo, RelationTag1.Info as Name, RelationTag2.Info as Place, RelationTag3.Info as PostalCode
@@ -44,32 +46,41 @@ else
 GO
 
 -- INFO ROAD CREATION
-SELECT * INTO info.Roads FROM
-(SELECT       Way.Id, Way.Line as Street,WayTag.Info as HighWayType, WayTag1.Info as Name, WayTag2.Info as MaxSpeed
+
+
+;WITH CTE( Id, Street,HighWayType,  Name, MaxSpeed, RowNum)
+AS (SELECT       Way.Id, Way.Line as Street,WayTag.Info as HighWayType, WayTag1.Info as Name, WayTag2.Info as MaxSpeed,  ROW_NUMBER() OVER(PARTITION BY Way.Id ORDER BY Way.id) AS RowNum
 FROM            Way LEFT JOIN
 				WayTag ON WayTag.WayId = Way.Id INNER JOIN
 				TagType ON WayTag.Typ = TagType.Typ and WayTag.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'highway') LEFT JOIN
 				WayTag AS WayTag1 ON Way.Id = WayTag1.WayId and WayTag1.Typ =  (SELECT TOP(1) Typ FROM TagType WHERE name like 'name') LEFT JOIN
 				WayTag AS WayTag2 ON Way.Id = WayTag2.WayId and WayTag2.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'maxspeed')
-where Way.line is not null) x
+where Way.line is not null
+)
+SELECT * INTO info.Roads FROM  cte WHERE RowNum = 1
 GO
 
-ALTER TABLE info.Roads ADD CONSTRAINT PK_Roads PRIMARY KEY CLUSTERED (Id)
 
+
+ALTER TABLE info.Roads ADD CONSTRAINT PK_Roads PRIMARY KEY CLUSTERED (Id) 
 IF(@@VERSION like '%Server 2008%')
 	CREATE SPATIAL INDEX [idxInfoRoad] ON [info].[Roads] ([Street])
 ELSE
 	CREATE SPATIAL INDEX [idxInfoRoad] ON [info].[Roads] ([Street]) USING  GEOGRAPHY_AUTO_GRID 
 
 -- INFO CITIES CREATION
-SELECT * INTO info.Cities FROM (
-SELECT      Node.Id, Latitude, Longitude, Node.location,  NodeTag.Info as Name, NodeTag2.Info as Place
+;WITH CTE( Id, Latitude,Longitude,  location, Name, Place, RowNum)
+AS
+(
+
+SELECT      Node.Id, Latitude, Longitude, Node.location,  NodeTag.Info as Name, NodeTag2.Info as Place,  ROW_NUMBER() OVER(PARTITION BY Node.Id ORDER BY Node.Id) AS RowNum
 FROM            Node LEFT JOIN
 				NodeTag ON Node.id = NodeTag.NodeId INNER JOIN
 				TagType ON NodeTag.Typ = TagType.Typ and NodeTag.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name = 'name') JOIN
 				NodeTag AS NodeTag2 ON Node.Id = NodeTag2.NodeId and NodeTag2.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'place') 
-where Node.location is not null) x
-
+where Node.location is not null
+)
+SELECT * INTO info.Cities FROM  cte WHERE RowNum = 1
 
 ALTER TABLE info.Cities ADD CONSTRAINT PK_Cities PRIMARY KEY CLUSTERED (Id)
 
