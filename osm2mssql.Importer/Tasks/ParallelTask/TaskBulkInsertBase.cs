@@ -43,6 +43,11 @@ namespace osm2mssql.Importer.Tasks.ParallelTask
                 {
                     foreach (var table in DataTableCollection.GetConsumingEnumerable())
                     {
+                        var dtcolumns = new string[] { "relationid", "sort" };
+                        string[] keys = table.PrimaryKey.Select(column => column.ColumnName).ToArray();
+
+                        var dtDistinct = table.DefaultView.ToTable(true, keys);
+
                         WriteToDbAsync(table.TableName, table).Wait();
                         if (DataTableCollection.Count == 0 && DataTableCollection.IsAddingCompleted)
                             break;
@@ -57,8 +62,14 @@ namespace osm2mssql.Importer.Tasks.ParallelTask
         protected async Task WriteToDbAsync(string tableName, DataTable dt)
         {
             var connBuilder = new SqlConnectionStringBuilder(Connection.ToString());
-            var options = SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.UseInternalTransaction; //Is Faster with TableLock - also with parallel Imports
+
+           
+    
+
+            var options = SqlBulkCopyOptions.TableLock & SqlBulkCopyOptions.KeepIdentity; //Is Faster with TableLock - also with parallel Imports
             using (var s = new SqlBulkCopy(connBuilder.ToString(), options))
+
+
             {
                 s.BulkCopyTimeout = int.MaxValue;
                 s.BatchSize = 0;

@@ -18,6 +18,10 @@ namespace osm2mssql.Importer.Tasks.FinishTasks
 
         protected override Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
+
+            ExecuteSqlCmd("TRUNCATE TABLE [MemberRole]");
+            ExecuteSqlCmd("TRUNCATE TABLE [MemberType]");
+
             var runningTasks = new List<Task>();
             var tagTypes = attributeRegistry.GetAttributeValues(OsmAttribute.TagType);
             var memberRoles = attributeRegistry.GetAttributeValues(OsmAttribute.MemberRole);

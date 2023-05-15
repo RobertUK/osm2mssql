@@ -12,6 +12,9 @@ namespace osm2mssql.Importer.Tasks.FinishTasks
 
         protected override async Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
+            ExecuteSqlCmd("TRUNCATE TABLE [Way]");
+    
+
             ExecuteSqlCmd("INSERT INTO dbo.Way(Id, line) " +
                           "SELECT wayId, dbo.CreateLineString(Latitude, Longitude, sort) " +
                           "from WayCreation INNER JOIN " +
