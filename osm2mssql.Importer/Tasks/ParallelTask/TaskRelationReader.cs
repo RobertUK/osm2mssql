@@ -27,8 +27,8 @@ namespace osm2mssql.Importer.Tasks.ParallelTask
                                                     (IOsmReader)new PbfOsmReader() :
                                                     (IOsmReader)new XmlOsmReader();
 
-            //ExecuteSqlCmd("TRUNCATE TABLE [RelationCreation]");
-            //ExecuteSqlCmd("TRUNCATE TABLE [RelationTag]");
+            ExecuteSqlCmd("TRUNCATE TABLE [RelationCreation]");
+            ExecuteSqlCmd("TRUNCATE TABLE [RelationTag]");
 
             var dRelationCreation = new DataTable { MinimumCapacity = MaxRowCountInMemory };
             dRelationCreation.TableName = "RelationCreation";

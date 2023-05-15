@@ -12,7 +12,7 @@ namespace osm2mssql.Importer.Tasks.FinishTasks
 
         protected override async Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
-            //ExecuteSqlCmd("TRUNCATE TABLE [Way]");
+            ExecuteSqlCmd("TRUNCATE TABLE [Way]");
     
 
             ExecuteSqlCmd("INSERT INTO dbo.Way(Id, line) " +

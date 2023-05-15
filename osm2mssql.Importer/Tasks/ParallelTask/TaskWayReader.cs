@@ -26,8 +26,8 @@ namespace osm2mssql.Importer.Tasks.ParallelTask
         protected override Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
             var watch = Stopwatch.StartNew();
-            //ExecuteSqlCmd("TRUNCATE TABLE WayCreation");
-            //ExecuteSqlCmd("TRUNCATE TABLE WayTag");
+            ExecuteSqlCmd("TRUNCATE TABLE WayCreation");
+            ExecuteSqlCmd("TRUNCATE TABLE WayTag");
 
             var dWays = new DataTable();
             dWays.TableName = "WayCreation";
