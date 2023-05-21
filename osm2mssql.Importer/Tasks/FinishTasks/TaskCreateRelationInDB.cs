@@ -13,8 +13,8 @@ namespace osm2mssql.Importer.Tasks.FinishTasks
 
         protected override async Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)
         {
-            var sql = "";
-            //@"TRUNCATE TABLE Relation";
+            var sql = @"TRUNCATE TABLE Relation;";
+
             ExecuteSqlCmd(sql);
 
             sql = @"INSERT INTO Relation(id, geo, role)

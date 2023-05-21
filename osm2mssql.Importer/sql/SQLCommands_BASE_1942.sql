@@ -18,7 +18,6 @@ CREATE TABLE [info].[AdminLevels](
 	[Place] [nvarchar](max) NULL,
 	[PostalCode] [nvarchar](max) NULL,
 	[idx] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_AdminLevels] PRIMARY KEY CLUSTERED 
 (
 	[RelationId] ASC
@@ -35,7 +34,6 @@ CREATE TABLE [info].[Cities](
 	[Name] [nvarchar](1000) NULL,
 	[Place] [nvarchar](1000) NOT NULL,
 	[RowNum] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_Cities] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -49,7 +47,6 @@ CREATE TABLE [info].[Roads](
 	[Name] [nvarchar](max) NULL,
 	[MaxSpeed] [nvarchar](max) NULL,
 	[RowNum] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_Roads] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -60,7 +57,7 @@ CREATE TABLE [info].[Roads](
 
 (
 SELECT       Relation.id as RelationId, AdminLevel = CASE WHEN ISNUMERIC(RelationTag.Info) =1 THEN CAST(RelationTag.Info as int) ELSE -1 END, Relation.Geo, RelationTag1.Info as Name, RelationTag2.Info as Place, RelationTag3.Info as PostalCode
-,ROW_NUMBER() OVER (PARTITION BY Relation.id ORDER BY  Relation.id) AS idx, getdate() as DateCreated
+,ROW_NUMBER() OVER (PARTITION BY Relation.id ORDER BY  Relation.id) AS idx
 FROM            Relation LEFT JOIN
 				RelationTag ON Relation.id = RelationTag.RelationId INNER JOIN
 				TagType ON RelationTag.Typ = TagType.Typ and RelationTag.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'admin_level') LEFT JOIN
@@ -93,8 +90,8 @@ GO
 -- INFO ROAD CREATION
 
 
-;WITH CTE( Id, Street,HighWayType,  Name, MaxSpeed, RowNum, DateCreated)
-AS (SELECT       Way.Id, Way.Line as Street,WayTag.Info as HighWayType, WayTag1.Info as Name, WayTag2.Info as MaxSpeed,  ROW_NUMBER() OVER(PARTITION BY Way.Id ORDER BY Way.id) AS RowNum, getdate() as DateCreated
+;WITH CTE( Id, Street,HighWayType,  Name, MaxSpeed, RowNum)
+AS (SELECT       Way.Id, Way.Line as Street,WayTag.Info as HighWayType, WayTag1.Info as Name, WayTag2.Info as MaxSpeed,  ROW_NUMBER() OVER(PARTITION BY Way.Id ORDER BY Way.id) AS RowNum
 FROM            Way LEFT JOIN
 				WayTag ON WayTag.WayId = Way.Id INNER JOIN
 				TagType ON WayTag.Typ = TagType.Typ and WayTag.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'highway') LEFT JOIN
@@ -109,11 +106,11 @@ GO
 
 
 
-;WITH CTE( Id, Latitude,Longitude,  location, Name, Place, RowNum, DateCreated)
+;WITH CTE( Id, Latitude,Longitude,  location, Name, Place, RowNum)
 AS
 (
 
-SELECT      Node.Id, node.Latitude, node.Longitude, Node.location,  NodeTag.Info as Name, NodeTag2.Info as Place,  ROW_NUMBER() OVER(PARTITION BY Node.Id ORDER BY Node.Id) AS RowNum, getdate() as DateCreated
+SELECT      Node.Id, node.Latitude, node.Longitude, Node.location,  NodeTag.Info as Name, NodeTag2.Info as Place,  ROW_NUMBER() OVER(PARTITION BY Node.Id ORDER BY Node.Id) AS RowNum
 FROM            Node LEFT JOIN
 				NodeTag ON Node.id = NodeTag.NodeId INNER JOIN
 				TagType ON NodeTag.Typ = TagType.Typ and NodeTag.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name = 'name') JOIN
