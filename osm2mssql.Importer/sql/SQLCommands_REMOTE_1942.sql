@@ -18,7 +18,6 @@ CREATE TABLE [info].[AdminLevels](
 	[Place] [nvarchar](max) NULL,
 	[PostalCode] [nvarchar](max) NULL,
 	[idx] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_AdminLevels] PRIMARY KEY CLUSTERED 
 (
 	[RelationId] ASC
@@ -35,7 +34,6 @@ CREATE TABLE [info].[Cities](
 	[Name] [nvarchar](1000) NULL,
 	[Place] [nvarchar](1000) NOT NULL,
 	[RowNum] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_Cities] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -49,7 +47,6 @@ CREATE TABLE [info].[Roads](
 	[Name] [nvarchar](max) NULL,
 	[MaxSpeed] [nvarchar](max) NULL,
 	[RowNum] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_Roads] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC

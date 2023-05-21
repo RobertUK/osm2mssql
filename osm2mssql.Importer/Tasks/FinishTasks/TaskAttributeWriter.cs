@@ -22,6 +22,8 @@ namespace osm2mssql.Importer.Tasks.FinishTasks
             ExecuteSqlCmd("TRUNCATE TABLE [MemberRole]");
             ExecuteSqlCmd("TRUNCATE TABLE [MemberType]");
 
+            ExecuteSqlCmd("TRUNCATE TABLE [TagType]");
+
             var runningTasks = new List<Task>();
             var tagTypes = attributeRegistry.GetAttributeValues(OsmAttribute.TagType);
             var memberRoles = attributeRegistry.GetAttributeValues(OsmAttribute.MemberRole);
