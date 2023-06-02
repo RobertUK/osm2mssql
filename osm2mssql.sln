@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osm2mssql.Importer", "osm2mssql.Importer\osm2mssql.Importer.csproj", "{54255A28-2302-45B6-B428-BF4581355B26}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osm2mssql.OsmDb2012", "osm2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osm2mssql.InfoDAL", "osm2mssql.InfoDAL\osm2mssql.InfoDAL.csproj", "{0CF3444E-DA6F-484D-BA13-EBF25B008075}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup2\Setup2.vdproj", "{5AF77F9D-99EC-462D-890A-3F211AAD9DEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -20,8 +22,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{54255A28-2302-45B6-B428-BF4581355B26}.Debug|x64.ActiveCfg = Debug|x64
 		{54255A28-2302-45B6-B428-BF4581355B26}.Debug|x64.Build.0 = Debug|x64
-		{54255A28-2302-45B6-B428-BF4581355B26}.Release|x64.ActiveCfg = Release|x64
-		{54255A28-2302-45B6-B428-BF4581355B26}.Release|x64.Build.0 = Release|x64
+		{54255A28-2302-45B6-B428-BF4581355B26}.Release|x64.ActiveCfg = Release|x86
+		{54255A28-2302-45B6-B428-BF4581355B26}.Release|x64.Build.0 = Release|x86
 		{14A7DD4A-09AF-4347-B698-DB17E1D1E03C}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{14A7DD4A-09AF-4347-B698-DB17E1D1E03C}.Debug|x64.Build.0 = Debug|Any CPU
 		{14A7DD4A-09AF-4347-B698-DB17E1D1E03C}.Release|x64.ActiveCfg = Release|Any CPU
@@ -30,8 +32,13 @@ Global
 		{0CF3444E-DA6F-484D-BA13-EBF25B008075}.Debug|x64.Build.0 = Debug|Any CPU
 		{0CF3444E-DA6F-484D-BA13-EBF25B008075}.Release|x64.ActiveCfg = Release|Any CPU
 		{0CF3444E-DA6F-484D-BA13-EBF25B008075}.Release|x64.Build.0 = Release|Any CPU
+		{5AF77F9D-99EC-462D-890A-3F211AAD9DEF}.Debug|x64.ActiveCfg = Debug
+		{5AF77F9D-99EC-462D-890A-3F211AAD9DEF}.Release|x64.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {257E59D0-00EF-4FF7-8009-9AA7B033E46C}
 	EndGlobalSection
 EndGlobal
