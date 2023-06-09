@@ -1,4 +1,5 @@
-﻿--IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Cities') drop table info.Cities 
+﻿SET NOCOUNT ON
+--IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Cities') drop table info.Cities 
 --IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Roads') drop table info.Roads
 --IF EXISTS(SELECT 1 FROM SYS.TABLES where name = 'AdminLevels') drop table info.AdminLevels
 
@@ -2346,7 +2347,6 @@ CREATE TABLE [info].[Cities](
 	[location] [geography] NOT NULL,
 	[Name] [nvarchar](1000) NULL,
 	[Place] [nvarchar](1000) NOT NULL,
-	[RowNum] [bigint] NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
  CONSTRAINT [PK_Cities] PRIMARY KEY CLUSTERED 
 (
@@ -2360,8 +2360,8 @@ CREATE TABLE [info].[Roads](
 	[HighWayType] [nvarchar](max) NULL,
 	[Name] [nvarchar](max) NULL,
 	[MaxSpeed] float NULL,
-	[RowNum] [bigint] NULL,
-	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
+	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE(),
+	[LastUpdated] [datetime] NULL
  CONSTRAINT [PK_Roads] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -2384,40 +2384,85 @@ where Relation.geo is not null and al.RelationId is null
 
 ))
 
-insert info.AdminLevels 
-select * from
+insert info.AdminLevels (RelationId, AdminLevel, Geo, Name, Place, PostalCode)
+select RelationId, AdminLevel, Geo, Name, Place, PostalCode from
 src WHERE idx = 1;
 GO
---ALTER TABLE info.AdminLevels ADD CONSTRAINT
---PK_AdminLevels PRIMARY KEY CLUSTERED (RelationId)
---GO
---CREATE NONCLUSTERED INDEX idx_AdminLevels ON [info].[AdminLevels]
---(AdminLevel ASC)
---GO
 
---IF(@@VERSION like '%Server 2008%')
---	CREATE SPATIAL INDEX [idx_AdminLevelsSpatial] ON [info].[AdminLevels] ([Geo])
---else
---	CREATE SPATIAL INDEX [idx_AdminLevelsSpatial] ON [info].[AdminLevels] ([Geo]) USING  GEOGRAPHY_AUTO_GRID 
 
---GO
+
+IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idx_AdminLevelsSpatial') 
+IF(@@VERSION like '%Server 2008%')
+	CREATE SPATIAL INDEX [idx_AdminLevelsSpatial] ON [info].[AdminLevels] ([Geo])
+else
+	CREATE SPATIAL INDEX [idx_AdminLevelsSpatial] ON [info].[AdminLevels] ([Geo]) USING  GEOGRAPHY_AUTO_GRID 
+
+GO
 
 -- INFO ROAD CREATION
 
 
-;WITH CTE( Id, Street,HighWayType, RowNum, Name, MaxSpeed, DateCreated)
-AS (SELECT       Way.Id, Way.Line as Street,WayTag.Info as HighWayType, WayTag1.Info as Name, CASE WHEN ISNUMERIC(WayTag2.Info) = 1 THEN [dbo].[ConvertUnits]('Miles/hour','Km/hour', LEFT(WayTag2.Info, 2)) ELSE NULL END as MaxSpeed,  ROW_NUMBER() OVER(PARTITION BY Way.Id ORDER BY Way.id) AS RowNum, getdate() as DateCreated
-FROM            Way LEFT JOIN
+--[dbo].[ConvertUnits]('Miles/hour','Km/hour', LEFT(WayTag2.Info, 2)) THIS WILL BE FOR CONVERTING, req specific!! 
+;WITH CTE( Id, Street,HighWayType, Name, MaxSpeed, RowNum, DateCreated)
+AS (
+
+SELECT    Way.Id, Way.Line as Street,WayTag.Info as HighWayType, COALESCE(WayTagRef.Info + ' (' + WayTagName.Info + ')', WayTagName.Info, WayTagRef.Info) Name, CASE WHEN ISNUMERIC(LEFT(WayTag2.Info, 2)) = 1 THEN LEFT(WayTag2.Info, 2) ELSE NULL END as MaxSpeed,  ROW_NUMBER() OVER(PARTITION BY Way.Id ORDER BY Way.id) AS RowNum, getdate() as DateCreated
+FROM            Way INNER JOIN
 				WayTag ON WayTag.WayId = Way.Id INNER JOIN
 				TagType ON WayTag.Typ = TagType.Typ and WayTag.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'highway') LEFT JOIN
-				WayTag AS WayTag1 ON Way.Id = WayTag1.WayId and WayTag1.Typ =  (SELECT TOP(1) Typ FROM TagType WHERE name like 'name') LEFT JOIN
-				WayTag AS WayTag2 ON Way.Id = WayTag2.WayId and WayTag2.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'maxspeed') LEFT JOIN
-				info.Roads r ON r.Id = Way.Id 
-where Way.line is not null and r.Id is null
+				WayTag AS WayTagName ON Way.Id = WayTagName.WayId and WayTagName.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'name') LEFT JOIN
+				WayTag AS WayTagRef ON Way.Id = WayTagRef.WayId and WayTagRef.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'ref') INNER JOIN
+				WayTag AS WayTag2 ON Way.Id = WayTag2.WayId and WayTag2.Typ = (SELECT TOP(1) Typ FROM TagType WHERE name like 'maxspeed') --LEFT JOIN
+			
+where Way.line is not null
+and COALESCE(WayTagRef.Info + ' (' + WayTagName.Info + ')', WayTagName.Info, WayTagRef.Info) is not null
+
 )
-insert info.Roads (Id, Street,HighWayType,  Name, MaxSpeed, DateCreated)
-SELECT  Id, Street,HighWayType,  Name, MaxSpeed, DateCreated FROM  cte WHERE RowNum = 1
+MERGE info.Roads target USING (select * from CTE c WHERE  RowNum = 1) source
+ON (target.id = source.id)
+WHEN MATCHED AND (
+		 target.MaxSpeed != source.MaxSpeed
+		 OR (target.MaxSpeed IS NULL AND source.MaxSpeed IS NOT NULL)
+		 OR (target.MaxSpeed IS NOT NULL AND source.MaxSpeed IS NULL)
+
+		 OR target.Name != source.Name
+		 OR (target.Name IS NULL AND source.Name IS NOT NULL)
+		 OR (target.Name IS NOT NULL AND source.Name IS NULL)
+
+		 OR target.HighWayType != source.HighWayType
+		 OR (target.HighWayType IS NULL AND source.HighWayType IS NOT NULL)
+		 OR (target.HighWayType IS NOT NULL AND source.HighWayType IS NULL)
+	 )
+    THEN UPDATE  SET target.Street = source.Street ,target.HighWayType = source.HighWayType, target.Name = source.Name, target.MaxSpeed = source.MaxSpeed, target.LastUpdated = GETDATE() 
+	 
+WHEN NOT MATCHED
+    THEN INSERT (Id, Street,HighWayType,  Name, MaxSpeed, DateCreated) VALUES (source.Id, source.Street,source.HighWayType,  source.Name, source.MaxSpeed, source.DateCreated);
+--WHEN NOT MATCHED BY SOURCE
+    --as it is a delta load, do nothing. But could do this if full load: THEN DELETE;
+
+	  delete [info].[Roads]
+  where [HighWayType] = 'service'
+
+IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idx_AdminLevelsSpatial') 
+IF(@@VERSION like '%Server 2008%')
+	CREATE SPATIAL INDEX [idx_AdminLevelsSpatial] ON [info].[AdminLevels] ([Geo])
+else
+	CREATE SPATIAL INDEX [idx_AdminLevelsSpatial] ON [info].[AdminLevels] ([Geo]) USING  GEOGRAPHY_AUTO_GRID 
+
 GO
+
+
+
+IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idx_Roads_Spacial') 
+CREATE SPATIAL INDEX [idx_Roads_Spacial] ON [info].[Roads]
+(
+	[Street]
+)USING  GEOGRAPHY_AUTO_GRID 
+WITH (
+CELLS_PER_OBJECT = 16, PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+GO
+
 
 
 
@@ -2435,12 +2480,15 @@ where Node.location is not null and c.Id is null
 
 )
 insert info.Cities 
-SELECT *  FROM  cte WHERE RowNum = 1
+SELECT Id, Latitude,Longitude,  location, Name, Place, DateCreated  FROM  cte WHERE RowNum = 1
 
---ALTER TABLE info.Cities ADD CONSTRAINT PK_Cities PRIMARY KEY CLUSTERED (Id)
 
---IF(@@VERSION like '%Server 2008%')
---	CREATE SPATIAL INDEX [idxCities] ON [info].Cities (location)
---ELSE
---	CREATE SPATIAL INDEX [idxCities] ON [info].Cities (location) USING  GEOGRAPHY_AUTO_GRID 
+IF NOT EXISTS(SELECT 1 FROM SYS.INDEXES where name = 'idx_Cities_Spacial') 
+CREATE SPATIAL INDEX [idx_Cities_Spacial] ON [info].[Cities]
+(
+	[Location]
+)USING  GEOGRAPHY_AUTO_GRID 
+WITH (
+CELLS_PER_OBJECT = 16, PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 
+GO
