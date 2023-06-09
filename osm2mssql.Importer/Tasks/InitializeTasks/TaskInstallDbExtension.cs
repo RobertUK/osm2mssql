@@ -10,7 +10,7 @@ namespace osm2mssql.Importer.Tasks.InitializeTasks
     {
         public TaskInstallDbExtension(string name) : base(TaskType.InitializeTask, name)
         {
-
+            IsEnabled = false;
         }
 
         protected override async Task DoTaskWork(string osmFile, AttributeRegistry attributeRegistry)

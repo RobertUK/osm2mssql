@@ -61,7 +61,7 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
-    <ApplicationIcon>wally.ico</ApplicationIcon>
+    <ApplicationIcon>Images\App.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -183,13 +183,15 @@
     <Compile Include="OsmReader\XmlOsmReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tasks\FinishTasks\TaskAttributeWriter.cs" />
+    <Compile Include="Tasks\FinishTasks\TaskSqlCleanupDB.cs" />
+    <Compile Include="Tasks\FinishTasks\TaskCreateRelationInDB.cs" />
+    <Compile Include="Tasks\InitializeTasks\TaskCreateTables.cs" />
     <Compile Include="Tasks\ParallelTask\TaskBulkInsertBase.cs" />
     <Compile Include="Tasks\TaskBase.cs" />
     <Compile Include="Tasks\InitializeTasks\TaskCreateDatabase.cs" />
     <Compile Include="Tasks\FinishTasks\TaskBuildLineInDB.cs" />
-    <Compile Include="Tasks\FinishTasks\TaskCreateRelationInDB.cs" />
     <Compile Include="Tasks\FinishTasks\TaskCreateSpatialIndices.cs" />
-    <Compile Include="Tasks\FinishTasks\TaskExecuteSqlCommands.cs" />
+    <Compile Include="Tasks\FinishTasks\TaskSqlExecuteSqlProcessChanges.cs" />
     <Compile Include="Tasks\InitializeTasks\TaskInstallDbExtension.cs" />
     <Compile Include="Tasks\ParallelFinishTask\TaskNodeIndices.cs" />
     <Compile Include="Tasks\ParallelTask\TaskNodeReader.cs" />
@@ -222,6 +224,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="packages.config" />
@@ -232,7 +235,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\App.ico" />
     <Resource Include="Images\osm.png" />
     <Resource Include="Images\osm2mssql.png" />
   </ItemGroup>
@@ -258,21 +260,24 @@
     <Resource Include="Images\warning.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SQL\SQLCommands.sql">
+    <Content Include="SQL\SQLCleanupDb.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="wally.ico">
+    <Content Include="SQL\SQLProcessChanges.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Images\App.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Content Include="SQL\CreateTables.sql">
+    <EmbeddedResource Include="SQL\CreateTables.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SQL\CreateDbExtension.sql">
+    </EmbeddedResource>
+    <EmbeddedResource Include="SQL\CreateDbExtension.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SQL\CreateDatabase.sql">
+    </EmbeddedResource>
+    <EmbeddedResource Include="SQL\CreateDatabase.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

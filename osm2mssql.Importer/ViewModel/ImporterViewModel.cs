@@ -53,10 +53,41 @@ namespace osm2mssql.Importer.ViewModel
             }
         }
 
+        public bool SelectAll
+        {
+            get { return this._selectAll; }
+            set
+            {
+                if (value != SelectAll)
+                {
+                    this._selectAll = value;
+                    foreach (var task in Tasks)
+                        task.IsEnabled = this._selectAll;
+                }
+
+                //if (value != SelectAll)
+                //{
+                    
+                //        foreach (var task in Tasks)
+                //        task.IsEnabled =false;
+
+                //    this.RaisePropertyChanged("SelectAll");
+                //}
+
+                //this._selectAll = value.Value;
+                //foreach (var task in Tasks)
+                //{
+                //    task.IsEnabled=true;
+                //}
+                this.RaisePropertyChanged("SelectAll");
+            }
+        }
+
         public IEnumerable<TaskBase> Tasks { get { return _runner.Tasks; } }
         public ImporterModel Model { get; set; }
         public ObservableCollection<string> LogRows { get; private set; }
 
+        private bool _selectAll = false;
         private bool _isNotProcessing = true;
         private ConnectionResult _lastTryConnectionResult;
 

@@ -45,7 +45,10 @@ namespace osm2mssql.Importer.Tasks
         {
             Tasks.Clear();
             Tasks.Add(new TaskCreateDatabase(Language.CurrentLanguage["CreateDatabaseTaskDescription"]));
+         
             Tasks.Add(new TaskInstallDbExtension(Language.CurrentLanguage["TaskInstallDbExtension"]));
+ 
+            Tasks.Add(new TaskCreateTables(Language.CurrentLanguage["CreateTablesTaskDescription"]));
 
             Tasks.Add(new TaskNodeReader(Language.CurrentLanguage["ReadNodeTaskDescription"]));
             Tasks.Add(new TaskWayReader(Language.CurrentLanguage["ReadWayTaskDescription"]));
@@ -61,7 +64,9 @@ namespace osm2mssql.Importer.Tasks
             Tasks.Add(new TaskCreateRelationInDB(Language.CurrentLanguage["CreateRelationInDBTaskDescription"]));
             Tasks.Add(new TaskCreateSpatialIndices(Language.CurrentLanguage["CreateSpatialIndicesDescription"]));
 
-            Tasks.Add(new TaskExecuteSqlCommands(Language.CurrentLanguage["TaskExecuteSqlCommands"]));
+            Tasks.Add(new TaskSqlExecuteSqlProcessChanges(Language.CurrentLanguage["TaskExecuteSqlProcessChanges"]));
+
+            Tasks.Add(new TaskExecuteSqlCleanupDB(Language.CurrentLanguage["TaskExecuteSqlCleanupDB"]));
         }
 
         public Task RunTasks(SqlConnectionStringBuilder connectionStringBuilder, string fileName)
