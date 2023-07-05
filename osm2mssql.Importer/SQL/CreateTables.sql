@@ -6,14 +6,14 @@ CREATE TABLE [WayCreation]	(
 	nodeId bigint NOT NULL,
 	sort int NOT NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Way') 
 CREATE TABLE [Way] (
 	[Id] bigint NOT NULL,
 	[line] [geography] NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'WayTag') 
 CREATE TABLE [WayTag] (
@@ -21,7 +21,7 @@ CREATE TABLE [WayTag] (
 	[Typ] [int] NOT NULL,
 	[Info] [nvarchar](max) NOT NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Node') 
 CREATE TABLE [Node](
@@ -30,7 +30,7 @@ CREATE TABLE [Node](
 	[Latitude] [float] NOT NULL,
 	[Longitude] [float] NOT NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'NodeTag') 
 CREATE TABLE [NodeTag](
@@ -38,7 +38,7 @@ CREATE TABLE [NodeTag](
 	[Typ] [int] NOT NULL,
 	[Info] [nvarchar](1000) NOT NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'TagType') 
 create table [TagType] (
@@ -55,7 +55,7 @@ CREATE TABLE [RelationCreation]	(
 	[role] int not null,
 	sort int NOT NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'Relation') 
 CREATE TABLE [Relation] (
@@ -63,7 +63,7 @@ CREATE TABLE [Relation] (
 	[geo] [geography] NULL	 ,	
 	[role] int not null,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'RelationTag') 
 CREATE TABLE [RelationTag] (
@@ -71,7 +71,7 @@ CREATE TABLE [RelationTag] (
 	[Typ] [int] NOT NULL,
 	[Info] [nvarchar](max) NOT NULL,
 	[DateCreated] [datetime] NOT NULL DEFAULT GETDATE()
-);
+) ON [temp];
 
 
 IF NOT EXISTS(SELECT 1 FROM SYS.TABLES where name = 'MemberType') 
